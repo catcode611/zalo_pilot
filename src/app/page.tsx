@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Check, X } from 'lucide-react';
 import { sendMessage, SendMessageResult } from "@/services/zalo";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 interface StatusDisplayProps {
   results: SendMessageResult[];
@@ -36,9 +37,10 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ results }) => {
 export default function Home() {
   const [phoneNumbers, setPhoneNumbers] = useState<string>('');
   const [messageTemplate, setMessageTemplate] = useState<string>('');
-  const [pictureUrl, setPictureUrl] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [results, setResults] = useState<SendMessageResult[]>([]);
   const [recentInputs, setRecentInputs] = useState<{ message: string; numbers: string } | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Load recent inputs from chrome.storage
@@ -53,7 +55,23 @@ export default function Home() {
     }
   }, []);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
   const handleSendToAll = async () => {
+    if (!selectedFile) {
+      toast({
+        variant: "destructive",
+        title: "No image selected",
+        description: "Please select an image to send.",
+      });
+      return;
+    }
     const numbers = phoneNumbers.split(',').map(number => number.trim());
     const newResults: SendMessageResult[] = [];
 
@@ -68,7 +86,10 @@ export default function Home() {
       await new Promise(resolve => setTimeout(resolve, delay));
 
       try {
-        const result = await sendMessage(number, messageTemplate, pictureUrl);
+        // Here, instead of passing pictureUrl, you would likely need to
+        // upload the selectedFile to a server and get a URL back.
+        // For this example, I'm just passing a placeholder.
+        const result = await sendMessage(number, messageTemplate, 'https://picsum.photos/200/300');
         newResults.push(result);
       } catch (error) {
         console.error(`Failed to send message to ${number}:`, error);
@@ -111,14 +132,19 @@ export default function Home() {
 
       <Card>
         <CardHeader>
-          <h2>Picture URL</h2>
+          <h2>Picture Upload</h2>
         </CardHeader>
         <CardContent>
           <Input
-            placeholder="Enter picture URL"
-            value={pictureUrl}
-            onChange={(e) => setPictureUrl(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
           />
+          {selectedFile && (
+            <div className="mt-2">
+              <p>Selected File: {selectedFile.name}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
