@@ -38,6 +38,7 @@ export default function Home() {
   const [phoneNumbers, setPhoneNumbers] = useState<string>('');
   const [messageTemplate, setMessageTemplate] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [results, setResults] = useState<SendMessageResult[]>([]);
   const [recentInputs, setRecentInputs] = useState<{ message: string; numbers: string } | null>(null);
   const { toast } = useToast();
@@ -57,11 +58,29 @@ export default function Home() {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
+      const file = event.target.files[0];
+      setSelectedFile(file);
+
+      // Generate a URL for the image
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImageUrl(imageUrl);
     } else {
       setSelectedFile(null);
+      setSelectedImageUrl(null);
     }
   };
+
+  const handleDownload = () => {
+    if (selectedImageUrl) {
+      const link = document.createElement("a");
+      link.href = selectedImageUrl;
+      link.download = selectedFile ? selectedFile.name : 'image.jpg'; // Set filename
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
 
   const handleSendToAll = async () => {
     if (!selectedFile) {
@@ -143,6 +162,7 @@ export default function Home() {
           {selectedFile && (
             <div className="mt-2">
               <p>Selected File: {selectedFile.name}</p>
+              <Button onClick={handleDownload}>Download Image</Button>
             </div>
           )}
         </CardContent>
@@ -165,4 +185,3 @@ export default function Home() {
     </div>
   );
 }
-
