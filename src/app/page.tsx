@@ -36,6 +36,7 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ results }) => {
 export default function Home() {
   const [phoneNumbers, setPhoneNumbers] = useState<string>('');
   const [messageTemplate, setMessageTemplate] = useState<string>('');
+  const [pictureUrl, setPictureUrl] = useState<string>('');
   const [results, setResults] = useState<SendMessageResult[]>([]);
   const [recentInputs, setRecentInputs] = useState<{ message: string; numbers: string } | null>(null);
 
@@ -67,7 +68,7 @@ export default function Home() {
       await new Promise(resolve => setTimeout(resolve, delay));
 
       try {
-        const result = await sendMessage(number, messageTemplate);
+        const result = await sendMessage(number, messageTemplate, pictureUrl);
         newResults.push(result);
       } catch (error) {
         console.error(`Failed to send message to ${number}:`, error);
@@ -104,6 +105,19 @@ export default function Home() {
             placeholder="Enter your message template"
             value={messageTemplate}
             onChange={(e) => setMessageTemplate(e.target.value)}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <h2>Picture URL</h2>
+        </CardHeader>
+        <CardContent>
+          <Input
+            placeholder="Enter picture URL"
+            value={pictureUrl}
+            onChange={(e) => setPictureUrl(e.target.value)}
           />
         </CardContent>
       </Card>
