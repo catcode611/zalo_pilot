@@ -8,7 +8,6 @@ import { Check, X } from 'lucide-react';
 import { sendMessage, SendMessageResult } from "@/services/zalo";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { translate } from "@/ai/flows/translate-flow";
 
 interface StatusDisplayProps {
   results: SendMessageResult[];
@@ -42,7 +41,6 @@ export default function Home() {
   const [results, setResults] = useState<SendMessageResult[]>([]);
   const [recentInputs, setRecentInputs] = useState<{ message: string; numbers: string } | null>(null);
   const { toast } = useToast();
-  const [translatedText, setTranslatedText] = useState<string>('');
 
   useEffect(() => {
     // Load recent inputs from chrome.storage
@@ -102,24 +100,6 @@ export default function Home() {
     setResults(newResults);
   };
 
-  const handleTranslate = async () => {
-    try {
-      const result = await translate({ text: messageTemplate });
-      setTranslatedText(result.translatedText);
-    } catch (error) {
-      console.error("Translation failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Translation Failed",
-        description: "Could not translate the message template.",
-      });
-    }
-  };
-
-  const handleUseTranslation = () => {
-    setMessageTemplate(translatedText);
-  };
-
   return (
     <div className="container mx-auto p-4 space-y-4">
       <h1 className="text-2xl font-bold">ZaloPilot</h1>
@@ -147,22 +127,6 @@ export default function Home() {
             value={messageTemplate}
             onChange={(e) => setMessageTemplate(e.target.value)}
           />
-          <div className="flex justify-end space-x-2">
-            <Button type="button" onClick={handleTranslate} className="bg-accent text-accent-foreground hover:bg-teal-700">
-              Translate to Vietnamese
-            </Button>
-            {translatedText && (
-              <Button type="button" onClick={handleUseTranslation} className="bg-primary text-primary-foreground hover:bg-green-700">
-                Use Translation
-              </Button>
-            )}
-          </div>
-          {translatedText && (
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground">Translated Text:</p>
-              <p>{translatedText}</p>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -201,3 +165,4 @@ export default function Home() {
     </div>
   );
 }
+
